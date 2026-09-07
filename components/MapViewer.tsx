@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { kml, gpx } from "@tmcw/togeojson";
+import togeojson from "togeojson";
 import L from 'leaflet';
 
 function ZoomToData({ data }: { data: any }) {
