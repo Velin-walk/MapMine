@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
-const MapViewer = dynamic(() => import('@/components/MapViewer'), { ssr: false });
+const MapViewer = dynamic(() => import('../components/MapViewer'), { ssr: false });
 
 export default function Home() {
   const [maps, setMaps] = useState([]);
