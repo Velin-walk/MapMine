@@ -21,10 +21,11 @@ export default function MapViewer({ url, type }: { url: string, type: string }) 
 
   useEffect(() => {
     fetch(url).then(r => r.text()).then(text => {
-      const dom = new DOMParser().parseFromString(text, "text/xml");
-      const converted = type === 'gpx' ? gpx(dom) : type === 'kml' ? kml(dom) : JSON.parse(text);
-      setGeoData(converted);
-    });
+  const dom = new DOMParser().parseFromString(text, "text/xml");
+  // Use the new import name
+  const converted = type === 'gpx' ? togeojson.gpx(dom) : type === 'kml' ? togeojson.kml(dom) : JSON.parse(text);
+  setGeoData(converted);
+});
   }, [url, type]);
 
   return (
