@@ -1,6 +1,17 @@
 // Save this as: app/api/upload/route.ts
 import { NextResponse } from 'next/server';
 
+async function githubError(response: Response) {
+  let details = response.statusText;
+  try {
+    const body = await response.json();
+    if (body.message) details = body.message;
+  } catch {
+    // Keep the HTTP status text when GitHub does not return JSON.
+  }
+  return `GitHub API ${response.status}: ${details}`;
+}
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
@@ -36,7 +47,9 @@ export async function POST(req: Request) {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${GITHUB_TOKEN}`,
-          'Content-Type': 'application/json'
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+          'X-GitHub-Api-Version': '2022-11-28'
         },
         body: JSON.stringify({
           message: `Upload ${fileName}`,
@@ -46,7 +59,7 @@ export async function POST(req: Request) {
     );
 
     if (!uploadRes.ok) {
-      throw new Error(`Failed to upload file: ${uploadRes.statusText}`);
+      throw new Error(await githubError(uploadRes));
     }
 
     // 2. Save JSON metadata to database folder
@@ -64,7 +77,9 @@ export async function POST(req: Request) {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${GITHUB_TOKEN}`,
-          'Content-Type': 'application/json'
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+          'X-GitHub-Api-Version': '2022-11-28'
         },
         body: JSON.stringify({
           message: `Add metadata ${id}`,
@@ -74,7 +89,7 @@ export async function POST(req: Request) {
     );
 
     if (!metadataRes.ok) {
-      throw new Error(`Failed to save metadata: ${metadataRes.statusText}`);
+      throw new Error(await githubError(metadataRes));
     }
 
     return NextResponse.json({ success: true, id });

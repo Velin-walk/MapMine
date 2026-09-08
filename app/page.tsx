@@ -7,6 +7,7 @@ const MapViewer = dynamic(() => import('../components/MapViewer'), { ssr: false 
 export default function Home() {
   const [maps, setMaps] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const fetchMaps = async () => {
     const res = await fetch('/api/maps');
@@ -18,11 +19,21 @@ export default function Home() {
   const handleUpload = async (e: any) => {
     e.preventDefault();
     setLoading(true);
+    setUploadError(null);
     const formData = new FormData(e.target);
-    await fetch('/api/upload', { method: 'POST', body: formData });
-    e.target.reset();
-    fetchMaps();
-    setLoading(false);
+    try {
+      const response = await fetch('/api/upload', { method: 'POST', body: formData });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || `Upload failed (${response.status})`);
+      }
+      e.target.reset();
+      await fetchMaps();
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,6 +47,7 @@ export default function Home() {
           <button disabled={loading} className="bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700">
             {loading ? "Uploading to GitHub..." : "Upload & Share"}
           </button>
+          {uploadError && <p className="text-sm text-red-600">{uploadError}</p>}
         </div>
       </form>
 
