@@ -5,10 +5,14 @@ import dynamic from 'next/dynamic';
 const MapViewer = dynamic(() => import('../components/MapViewer'), { ssr: false });
 
 export default function Home() {
-  const [maps, setMaps] = useState([]);
+  const [maps, setMaps] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchMaps = () => fetch('/api/maps').then(res => res.json()).then(setMaps);
+  const fetchMaps = async () => {
+    const res = await fetch('/api/maps');
+    const data = await res.json();
+    setMaps(Array.isArray(data) ? data : []);
+  };
   useEffect(() => { fetchMaps(); }, []);
 
   const handleUpload = async (e: any) => {
